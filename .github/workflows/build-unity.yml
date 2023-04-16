@@ -68,7 +68,7 @@ jobs:
           buildsPath: Build
           
       - run: |
-          chmod -R 777 Build && \
+          sudo chmod -R 777 Build && \
           cd Build && \
           zip -r "Build-${{ matrix.targetPlatform }}-${{ github.ref_name }}.zip" "${{ matrix.targetPlatform }}"
           
