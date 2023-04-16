@@ -1,0 +1,84 @@
+name: Build project
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'c*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_VERSION: 2021.3.6f1
+
+jobs:
+  build:
+    name: ✨ Building for ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
+          - StandaloneWindows64 # Build a Windows 64-bit standalone.
+          - StandaloneLinux64 # Build a Linux 64-bit standalone.
+          - WebGL # WebGL.
+
+        include:
+          - targetPlatform: StandaloneOSX
+            name: 'OSX'
+            channel: 'mac'
+
+          - targetPlatform: StandaloneWindows64
+            name: 'Windows'
+            channel: 'windows'
+
+          - targetPlatform: StandaloneLinux64
+            name: 'Linux'
+            channel: 'linux'
+
+          - targetPlatform: WebGL
+            name: 'WebGL'
+            channel: 'webgl'
+
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      # Cache
+      - name: Caching
+        uses: actions/cache@v1.1.0
+        with:
+          path: Library
+          key: Library
+      
+      # Create build path
+      - name: Create the build path
+        run: mkdir Build
+
+      # Build
+      - name: Build project
+        uses: game-ci/unity-builder@v2.2.0
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildsPath: Build
+      
+      - run: sudo chmod -R 777 Build && ls -R Build
+          
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          directory: "Build/${{ matrix.targetPlatform }}"
+          filename: "Build/${{ matrix.targetPlatform }}/Build-${{ matrix.targetPlatform }}-${{ github.ref_name }}.zip"
+          
+      - name: Release prebuilt
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "Build/${{ matrix.targetPlatform }}/Build-${{ matrix.targetPlatform }}-${{ github.ref_name }}.zip"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
