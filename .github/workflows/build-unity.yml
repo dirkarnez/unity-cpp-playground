@@ -75,6 +75,6 @@ jobs:
       - name: Release prebuilt
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "Build/${{ matrix.targetPlatform }}/Build-${{ matrix.targetPlatform }}-${{ github.ref_name }}.zip"
+          artifacts: "Build/Build-${{ matrix.targetPlatform }}-${{ github.ref_name }}.zip"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
