@@ -66,8 +66,6 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ matrix.targetPlatform }}
           buildsPath: Build
-      
-      - run: sudo chmod -R 777 Build && ls -R Build
           
       - name: Archive Release
         uses: thedoctor0/zip-release@master
